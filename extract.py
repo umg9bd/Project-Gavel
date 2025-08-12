@@ -19,6 +19,7 @@ def extract_text_from_folder(input_folder, output_folder):
             continue
         
         print(f"Processing file: {filename}")
+        #dummy commit
         
         try:
             # Use unstructured.partition to handle the file

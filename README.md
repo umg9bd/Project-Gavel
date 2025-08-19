@@ -6,15 +6,15 @@ This tool lets you upload **legal case files (PDF/TXT)**, automatically indexes 
 ---
 
 ##  Features  
-- 📂 Upload **PDF / TXT legal documents**  
-- ⚡ Automatic document indexing using **FAISS**  
-- 🤖 Query documents using **local LLMs (phi-3, gemma, mistral, llama3, etc.)**  
-- 🛡️ 100% private (no data leaves your computer)  
-- 🎯 Designed for **Indian legal use-cases**  
+-  Upload **PDF / TXT legal documents**  
+-  Automatic document indexing using **FAISS**  
+-  Query documents using **local LLMs (phi-3, gemma, mistral, llama3, etc.)**  
+-  100% private (no data leaves your computer)  
+-  Designed for **Indian legal use-cases**  
 
 ---
 
-## 🛠️ Installation  
+## Installation  
 
 ### 1. Clone this repo  
 ```bash
@@ -39,7 +39,7 @@ Download from [Ollama's Website](https://ollama.com/download)
 
 
 
-### 🚀 Usage
+###  Usage
 ### 1.Run the Model
 ```bash
 ollama run llama3:8b

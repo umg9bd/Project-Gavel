@@ -1,6 +1,13 @@
-streamlit
 llama-index
+llama-index-core
+llama-index-llms-ollama
+llama-index-embeddings-huggingface
+llama-index-vector-stores-faiss
+langchain
+pydantic
+unstructured[all-docs]
 faiss-cpu
-pypdf
-python-docx
-openai
+pytesseract
+sentence-transformers
+streamlit
+pyPDF2

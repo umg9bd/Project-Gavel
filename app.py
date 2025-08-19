@@ -78,18 +78,15 @@ def build_storage_context_with_faiss(faiss_index: faiss.Index, use_persist_dir_i
     return storage_context
 
 
-# ========== HELPERS ==========
-
-# ... keep your other helper functions like faiss_exists, save_faiss_index etc. ...
 def clear_index_on_upload():
     """Callback to clear the index and query box when new files are uploaded."""
     if "index" in st.session_state:
         del st.session_state.index
-
-    # ✅ ADD THIS LINE to clear the query text input
     if "query_input" in st.session_state:
-        st.session_state.query_input = "" 
-
+        st.session_state.query_input = ""
+    # Clear last response when files change
+    if "last_response" in st.session_state:
+        del st.session_state.last_response
     st.info("New file(s) uploaded. Please click 'Build Fresh Index' to update the knowledge base.")
 
 
@@ -142,7 +139,6 @@ def load_index_if_available():
     if faiss_exists():
         try:
             faiss_index = load_faiss_index()
-            # use_persist_dir_if_safe is now gone, we just need to load the docstore
             storage_context = StorageContext.from_defaults(
                 vector_store=FaissVectorStore(faiss_index=faiss_index),
                 persist_dir=PERSIST_DIR,
@@ -160,14 +156,14 @@ def pretty_sources(response):
         if not nodes:
             st.caption("No source nodes returned.")
             return
-        st.markdown("**Sources:**")
+        st.markdown("Sources:")
         for i, n in enumerate(nodes, start=1):
             meta = getattr(n.node, "metadata", {}) or {}
             fname = meta.get("file_name") or meta.get("filename") or meta.get("file_path") or "Unknown"
             snippet = (n.node.get_content() or "").strip().replace("\n", " ")
             if len(snippet) > 400:
                 snippet = snippet[:400] + "…"
-            st.write(f"{i}. *{fname}*")
+            st.write(f"{i}. {fname}")
             st.caption(snippet)
     except Exception:
         st.caption("Sources could not be displayed.")
@@ -175,18 +171,21 @@ def pretty_sources(response):
 
 # ========== STREAMLIT UI ==========
 st.set_page_config(page_title="Project Gavel (Local)", layout="wide")
-st.title("⚖️ Project Gavel — Local Legal Q&A")
+st.title("⚖ Project Gavel — Local Legal Q&A")
 st.markdown("Upload PDFs, build an index, and query with a local LLM.")
 
 with st.sidebar:
     st.header("Controls")
-    st.markdown(f"**LLM:** `llama3:8b` (Ollama)")
-    st.markdown(f"**Embeddings:** `{EMBED_MODEL_NAME}`")
+    st.markdown(f"LLM: llama3:8b (Ollama)")
+    st.markdown(f"Embeddings: {EMBED_MODEL_NAME}")
     if st.button("🔴 Reset / Delete Index"):
         if os.path.exists(PERSIST_DIR):
             shutil.rmtree(PERSIST_DIR)
         if "index" in st.session_state:
             del st.session_state.index
+        # Clear last response on reset
+        if "last_response" in st.session_state:
+            del st.session_state.last_response
         st.success("Index deleted. Upload new files to begin.")
         st.rerun()
 
@@ -200,20 +199,14 @@ uploaded = st.file_uploader(
     on_change=clear_index_on_upload
 )
 
-# --- New logic to sync the /data folder with the uploader UI ---
-
-# Get the set of filenames currently present in the uploader widget
+# --- Logic to sync the /data folder with the uploader UI ---
 current_ui_files = {f.name for f in uploaded} if uploaded else set()
-
-# 1. Handle Deletions: Find files that are in our tracker but NOT in the UI anymore
 files_to_delete = st.session_state.saved_files - current_ui_files
 for fname in files_to_delete:
     file_path = os.path.join(DATA_DIR, fname)
     if os.path.exists(file_path):
         os.remove(file_path)
-        st.toast(f"🗑️ Removed '{fname}' from the data folder.")
-
-# 2. Handle Additions: Find files that are in the UI but NOT in our tracker yet
+        st.toast(f"🗑 Removed '{fname}' from the data folder.")
 files_to_add = current_ui_files - st.session_state.saved_files
 if files_to_add:
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -222,19 +215,15 @@ if files_to_add:
             path = os.path.join(DATA_DIR, uf.name)
             with open(path, "wb") as f:
                 f.write(uf.getbuffer())
-    st.success(f"✅ Saved {len(files_to_add)} new file(s) to the `/data` folder.")
-
-# 3. Finally, update our tracker to match the current state of the UI
+    st.success(f"✅ Saved {len(files_to_add)} new file(s) to the /data folder.")
 st.session_state.saved_files = current_ui_files
 
-
-# A SINGLE, RELIABLE BUTTON TO BUILD THE INDEX FROM SCRATCH
+# --- Main Indexing Button ---
 if st.button("📖 Build Fresh Index from All Files"):
     if not os.path.exists(DATA_DIR) or not os.listdir(DATA_DIR):
-        st.warning("⚠️ Please upload some files first.")
+        st.warning("⚠ Please upload some files first.")
     else:
         with st.spinner("Building a new index from all files in ./data..."):
-            # Call the new, reliable build function
             st.session_state.index = build_index(DATA_DIR)
 
 st.divider()
@@ -242,9 +231,8 @@ st.header("Ask a Question")
 
 query = st.text_input("Enter your legal question:", key="query_input")
 if query:
-    # This logic is now much simpler. It only looks for an index in the session.
-    if "index" not in st.session_state:
-        st.warning("⚠️ Please build the index first.")
+    if "index" not in st.session_state or st.session_state.index is None:
+        st.warning("⚠ Please build the index first.")
     else:
         index = st.session_state.index
         with st.spinner(f"Thinking with llama3:8b..."):
@@ -253,6 +241,53 @@ if query:
                 response_mode="tree_summarize"
             )
             resp = qe.query(query)
-        st.subheader("Answer")
-        st.write(resp.response)
-        pretty_sources(resp) # Your existing helper
+        st.session_state.last_response = resp  # Save the response
+
+# --- Display Results and New Feature Buttons ---
+if "last_response" in st.session_state:
+    st.subheader("Answer")
+    st.write(st.session_state.last_response.response)
+    pretty_sources(st.session_state.last_response)
+    
+    # Check if there are sources to analyze for the new features
+    source_nodes = getattr(st.session_state.last_response, "source_nodes", [])
+    if source_nodes:
+        st.divider()
+        col1, col2 = st.columns(2)
+
+        # ✨ NEW: Contradiction Detection Feature
+        with col1:
+            if st.button("🔬 Check for Contradictions"):
+                with st.spinner("Searching for conflicting information..."):
+                    original_answer = st.session_state.last_response.response
+                    # Formulate a query to find opposing views
+                    contradiction_query = f"Find and present evidence from the documents that contradicts this statement: '{original_answer}'"
+                    
+                    qe_contradiction = st.session_state.index.as_query_engine(similarity_top_k=3)
+                    contradiction_resp = qe_contradiction.query(contradiction_query)
+                    
+                    st.info("*Contradiction Analysis*")
+                    st.write(contradiction_resp.response)
+                    pretty_sources(contradiction_resp)
+
+        # ✨ NEW: Timeline Reconstruction Feature
+        with col2:
+            if st.button("🗓 Reconstruct Timeline"):
+                with st.spinner("Building timeline from source documents..."):
+                    # Combine text from all source nodes
+                    full_context = "\n\n---\n\n".join([n.node.get_content() for n in source_nodes])
+                    
+                    # A specific prompt for the LLM
+                    timeline_prompt = (
+                        "From the following text, extract all events, dates, and key moments. "
+                        "Present them as a clear, chronological timeline. If specific dates are missing, "
+                        "use relative terms like 'following the incident' or 'subsequently'.\n\n"
+                        "Text to analyze:\n"
+                        f"{full_context}"
+                    )
+                    
+                    # Use the LLM directly for this specific summarization task
+                    timeline_response = Settings.llm.complete(timeline_prompt)
+                    
+                    st.info("*Timeline of Events*")
+                    st.markdown(timeline_response.text)

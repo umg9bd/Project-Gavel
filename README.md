@@ -2,11 +2,10 @@
 An intelligent **legal co-pilot for Indian jurisprudence** using **Retrieval-Augmented Generation (RAG)**.  
 This tool lets you upload **legal case files (PDF/TXT)**, automatically indexes them using **FAISS**, and allows you to query them using **local open-source LLMs** (via [Ollama](https://ollama.com/)).  
 
-No API keys, no cloud — **everything runs locally on your system**. 🖥️  
 
 ---
 
-## ✨ Features  
+##  Features  
 - 📂 Upload **PDF / TXT legal documents**  
 - ⚡ Automatic document indexing using **FAISS**  
 - 🤖 Query documents using **local LLMs (phi-3, gemma, mistral, llama3, etc.)**  

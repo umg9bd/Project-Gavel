@@ -40,7 +40,7 @@ Download from [Ollama's Website](https://ollama.com/download)
 
 
 ###  Usage
-### 1.Run the Model
+### 1.Run the Model on cmd after installing ollama
 ```bash
 ollama run llama3:8b
 ```

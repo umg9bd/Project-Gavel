@@ -1,8 +1,6 @@
- llama-index==0.10.42
- unstructured[all-docs]
- langchain==0.1.16
- faiss-cpu
- pytesseract
- sentence-transformers
- streamlit
- pyPDF2
+streamlit
+llama-index
+faiss-cpu
+pypdf
+python-docx
+openai

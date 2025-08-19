@@ -49,5 +49,5 @@ ollama run llama3:8b
 
 ### 2. Run the streamlit
 ```bash
-ollama run llama3:8b
+streamlit run app.py
 ```

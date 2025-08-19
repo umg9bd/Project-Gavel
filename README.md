@@ -1,10 +1,53 @@
-# Project-Gavel
-An intelligent legal co-pilot for Indian jurisprudence using RAG
-# Instructions to use:
-make sure you have ollama installed 
-If not install from [here](https://ollama.com/download)
-after installing run 
-```ollama run llama3:8b```
-wait for it to install and make sure it runs in the background
-then run the app.py using 
-```streamlit run app.py```
+# ⚖️ Project Gavel  
+An intelligent **legal co-pilot for Indian jurisprudence** using **Retrieval-Augmented Generation (RAG)**.  
+This tool lets you upload **legal case files (PDF/TXT)**, automatically indexes them using **FAISS**, and allows you to query them using **local open-source LLMs** (via [Ollama](https://ollama.com/)).  
+
+No API keys, no cloud — **everything runs locally on your system**. 🖥️  
+
+---
+
+## ✨ Features  
+- 📂 Upload **PDF / TXT legal documents**  
+- ⚡ Automatic document indexing using **FAISS**  
+- 🤖 Query documents using **local LLMs (phi-3, gemma, mistral, llama3, etc.)**  
+- 🛡️ 100% private (no data leaves your computer)  
+- 🎯 Designed for **Indian legal use-cases**  
+
+---
+
+## 🛠️ Installation  
+
+### 1. Clone this repo  
+```bash
+git clone https://github.com/<your-username>/Project-Gavel.git
+cd Project-Gavel
+```
+ ### 2. Create a Virtual Environment
+ ```bash
+python -m venv gavel_env
+```
+Activate it:
+```bash
+gavel_env\Scripts\activate
+```
+### 3.Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Install Ollama
+Download from [Ollama's Website](https://ollama.com/download)
+
+
+
+### 🚀 Usage
+### 1.Run the Model
+```bash
+ollama run llama3:8b
+```
+
+
+### 2. Run the streamlit
+```bash
+ollama run llama3:8b
+```

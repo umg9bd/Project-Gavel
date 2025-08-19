@@ -18,7 +18,7 @@ This tool lets you upload **legal case files (PDF/TXT)**, automatically indexes 
 
 ### 1. Clone this repo  
 ```bash
-git clone https://github.com/<your-username>/Project-Gavel.git
+git clone https://github.com/umg9bd/Project-Gavel.git
 cd Project-Gavel
 ```
  ### 2. Create a Virtual Environment

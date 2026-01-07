@@ -1,4 +1,4 @@
-# ⚖️ Project Gavel  
+#  Project Gavel  
 An intelligent **legal co-pilot for Indian jurisprudence** using **Retrieval-Augmented Generation (RAG)**.  
 This tool lets you upload **legal case files (PDF/TXT)**, automatically indexes them using **FAISS**, and allows you to query them using **local open-source LLMs** (via [Ollama](https://ollama.com/)).  
 
